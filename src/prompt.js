@@ -91,8 +91,18 @@ const PromptText = ({session, endSession}) => {
     const [currSentenceIndex, setCurrSentenceIndex] = useState(0);
     const [waiting, setWaiting] = useState(false);
     const [elapsedTime, setElapsedTime] = useState(0);
+    const [sentenceStartTime, setSentenceStartTime] = useState(Date.now());
 
     const nextSentence = () => {
+        // TODO: Log sentence to the server
+        const sentenceRecording = {
+            "start_time": sentenceStartTime,
+            "end_time": Date.now(),  // TODO: should this be relative to the sentence start time
+            "session_id": session.session_id,
+            "sentence": sentences[currSentenceIndex],
+            "sentence_id": currSentenceIndex
+        }
+        console.log(`Finished reading a sentence: ${JSON.stringify(sentenceRecording)}`);
         setWaiting(true); // will call useEffect
     }
 
@@ -101,6 +111,7 @@ const PromptText = ({session, endSession}) => {
             const timeout = setTimeout(() => {
                 setCurrSentenceIndex((currSentenceIndex + 1) % sentences.length);
                 setWaiting(false);
+                setSentenceStartTime(Date.now());
             }, 3000);
             return () => clearTimeout(timeout);
         }
