@@ -1,13 +1,13 @@
 import {useEffect, useState} from "react";
 import {millisecondsToHuman} from "./helpers";
 import sentences from './luganda_sentences.json';
-import {getNextSession} from "./client";
+import {getNextSession, addSession, createRecording} from "./client";
 
 
 const buttonStyle = "m-4 px-6 py-2 font-medium rounded shadow-md hover:shadow-lg";
 const purpleButton = "bg-purple-400 hover:bg-purple-200";
 const redButton = "bg-red-400 hover:bg-red-200";
-const sessionSize = 10;  // Number of sentences in a single session
+const sessionSize = 10;  // Number of sentences in a single session // TODO: Should this be increased? (feedback from reader)
 
 const MainComponent = () => {
 
@@ -24,7 +24,7 @@ const MainComponent = () => {
         setSession({
             "start_time": Date.now(),
             "no_of_sentences": 0,
-            "session_id": sessionId,
+            "session_id": String(sessionId),
             "first_sentence_id": sessionId * sessionSize
         });
         setPage("prompt");
@@ -33,6 +33,10 @@ const MainComponent = () => {
     const fetchNextSession = async () => {
         const nextSessionId = await getNextSession();
         setSessionId(nextSessionId);
+    }
+
+    const logSessionToServer = async (session) => {
+        await addSession(session);
     }
 
     const endSession = (last_sentence_id) => {
@@ -51,9 +55,9 @@ const MainComponent = () => {
     useEffect(() => {
         if ("end_time" in session) {
             console.log(`Ending session: ${JSON.stringify(session)}`);
-            // TODO: Log this session to the server
+            logSessionToServer(session)
         } else if ("start_time" in session) {
-            console.log(`Starting session: ${JSON.stringify(session)}`)
+            console.log(`Starting session: ${JSON.stringify(session)}`);
         }
     }, [session]);
 
@@ -116,17 +120,17 @@ const PromptText = ({session, endSession}) => {
     const [elapsedTime, setElapsedTime] = useState(0);
     const [sentenceStartTime, setSentenceStartTime] = useState(Date.now());
 
-    const nextSentence = () => {
-        // TODO: Log sentence to the server
+    const nextSentence = async () => {
         const sentenceRecording = {
             "start_time": sentenceStartTime,
-            "end_time": Date.now(),  // TODO: should this be relative to the sentence start time
-            "session_id": session.session_id,
+            "end_time": Date.now(),
+            "session_id": String(session.session_id),
             "sentence": sentences[currSentenceIndex],
-            "sentence_id": currSentenceIndex
+            "sentence_id": String(currSentenceIndex)
         }
         console.log(`Finished reading a sentence: ${JSON.stringify(sentenceRecording)}`);
         setWaiting(true); // will call useEffect
+        createRecording(sentenceRecording);
     }
 
     useEffect(() => {

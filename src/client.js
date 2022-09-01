@@ -14,3 +14,25 @@ export const getNextSession = async () => {
     console.log(response);
     return response['next-session'];
 }
+
+export const addSession = async (session) => {
+    const requestOptions = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(session)
+    }
+
+    const response = await (await fetch(addSessionURL, requestOptions)).json();
+    console.log(response);
+}
+
+export const createRecording = async (sentenceRecording) => {
+    const requestOptions = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(sentenceRecording)
+    }
+
+    const response = await (await fetch(createRecordingURL, requestOptions)).json();
+    console.log(response);
+}
