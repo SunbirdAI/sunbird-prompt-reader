@@ -1,13 +1,7 @@
 import {useEffect, useState} from "react";
 import {millisecondsToHuman} from "./helpers";
+import sentences from './luganda_sentences.json';
 
-
-const sentences = [
-    "Bbiringanya lubeerera  asinga kukulira mu mbeera ya bugumu",
-    "Ettaka ly'okulimirako n'okulundirako ebiseera ebimu kisoomooza abalimi",
-    "Abalimi balina okukubirizibwa okwongera okulima emmwanyi",
-    "Uganda essira eritadde ku bulimi"
-];
 
 const buttonStyle = "m-4 px-6 py-2 font-medium rounded shadow-md hover:shadow-lg";
 const purpleButton = "bg-purple-400 hover:bg-purple-200";
@@ -17,6 +11,9 @@ const MainComponent = () => {
 
     const [page, setPage] = useState("start");  // pages: start, prompt, waiting (finish session)
     const [session, setSession] = useState({});
+
+    // TODO: Static sessions. 10 sentences per session.
+    // TODO: Add progress indicator (for both recordings and sessions)
 
     const startSession = () => {
         // TODO: Fetch the last session from the server and use it to set the session_id
@@ -112,7 +109,7 @@ const PromptText = ({session, endSession}) => {
                 setCurrSentenceIndex((currSentenceIndex + 1) % sentences.length);
                 setWaiting(false);
                 setSentenceStartTime(Date.now());
-            }, 3000);
+            }, 3000); // TODO: Maybe use 5000 seconds.
             return () => clearTimeout(timeout);
         }
 
