@@ -115,7 +115,7 @@ const StartButton = ({startSession, sessionId}) => {
 
 const PromptText = ({session, endSession}) => {
 
-    const [currSentenceIndex, setCurrSentenceIndex] = useState(0);
+    const [currSentenceIndex, setCurrSentenceIndex] = useState(session.first_sentence_id);
     const [waiting, setWaiting] = useState(false);
     const [elapsedTime, setElapsedTime] = useState(0);
     const [sentenceStartTime, setSentenceStartTime] = useState(Date.now());
@@ -166,14 +166,14 @@ const PromptText = ({session, endSession}) => {
                 </button>
             </>}
             {waiting &&
-            <>
-                <button onClick={() => endSession(currSentenceIndex)}
-                        className={`${buttonStyle} ${redButton} my-10`}>Finish Session
-                </button>
-                {// TODO: Replace this with a spinner/loader
-                }
-                <p>Waiting 3 seconds ... (click the finish button if you're done recording)</p>
-            </>}
+            ((currSentenceIndex % sessionSize === sessionSize - 1
+                    || currSentenceIndex === sentences.length - 1) ?
+                    <button onClick={() => endSession(currSentenceIndex)}
+                            className={`${buttonStyle} ${redButton} my-10`}>Finish Session
+                    </button> :
+                    <p>Waiting 3 seconds ... (click the finish button if you're done recording)</p>
+            )
+            }
         </div>
     );
 };
