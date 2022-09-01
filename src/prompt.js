@@ -1,30 +1,38 @@
 import {useEffect, useState} from "react";
 import {millisecondsToHuman} from "./helpers";
 import sentences from './luganda_sentences.json';
+import {getNextSession} from "./client";
 
 
 const buttonStyle = "m-4 px-6 py-2 font-medium rounded shadow-md hover:shadow-lg";
 const purpleButton = "bg-purple-400 hover:bg-purple-200";
 const redButton = "bg-red-400 hover:bg-red-200";
+const sessionSize = 10;  // Number of sentences in a single session
 
 const MainComponent = () => {
 
     const [page, setPage] = useState("start");  // pages: start, prompt, waiting (finish session)
     const [session, setSession] = useState({});
+    const [sessionId, setSessionId] = useState(-1);
 
     // TODO: Static sessions. 10 sentences per session.
     // TODO: Add progress indicator (for both recordings and sessions)
 
-    const startSession = () => {
-        // TODO: Fetch the last session from the server and use it to set the session_id
-        // TODO: Also fetch the last sentence to be recorded and use it to set first_sentence_id
+    const startSession = async () => {
+        // Fetches the last session from the server and uses it to set the session_id
+        // Each session's sentences range from indices: (sessionId * sessionSize)...(sessionId * (sessionSize + 1) - 1)
         setSession({
             "start_time": Date.now(),
             "no_of_sentences": 0,
-            "session_id": 1,
-            "first_sentence_id": 0
+            "session_id": sessionId,
+            "first_sentence_id": sessionId * sessionSize
         });
         setPage("prompt");
+    }
+
+    const fetchNextSession = async () => {
+        const nextSessionId = await getNextSession();
+        setSessionId(nextSessionId);
     }
 
     const endSession = (last_sentence_id) => {
@@ -35,6 +43,7 @@ const MainComponent = () => {
                 "last_sentence_id": last_sentence_id
             }
         )
+        setSessionId(-1)
         setPage("start");
     }
 
@@ -48,27 +57,44 @@ const MainComponent = () => {
         }
     }, [session]);
 
+    // Fetch the next session's id
+    useEffect(() => {
+        console.log(sessionId);
+        if (sessionId === -1)
+            fetchNextSession();
+    }, [sessionId]);
+
     return (
         <>
-            <>{page === "start" &&
-            <StartButton
-                startSession={startSession}
-                session={session}
-            />}
-            </>
-            <>{page === "prompt" &&
-            <PromptText
-                endSession={endSession}
-                session={session}
-            />
+            {
+                sessionId === -1 ? "Getting next session..." :
+                    <>
+                        <>
+                            {
+                                page === "start" &&
+                                <StartButton
+                                    startSession={startSession}
+                                    sessionId={sessionId}
+                                />
+                            }
+                        </>
+                        <>
+                            {
+                                page === "prompt" &&
+                                <PromptText
+                                    endSession={endSession}
+                                    session={session}
+                                />
+                            }
+                        </>
+                    </>
             }
-            </>
         </>
 
     )
 }
 
-const StartButton = ({startSession, session}) => {
+const StartButton = ({startSession, sessionId}) => {
 
     return (
         <>
@@ -76,7 +102,7 @@ const StartButton = ({startSession, session}) => {
                 onClick={() => startSession()}
                 className={`${buttonStyle} ${purpleButton}`}
             >
-                Start New Session
+                {`Start Session ${sessionId}`}
             </button>
         </>
 
