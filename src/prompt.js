@@ -171,7 +171,7 @@ const PromptText = ({session, endSession}) => {
                     <button onClick={() => endSession(currSentenceIndex)}
                             className={`${buttonStyle} ${redButton} my-10`}>Finish Session
                     </button> :
-                    <p>Waiting 3 seconds ... (click the finish button if you're done recording)</p>
+                    <p>Waiting 3 seconds for next sentence...</p>
             )
             }
         </div>
