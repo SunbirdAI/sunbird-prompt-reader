@@ -7,7 +7,7 @@ import {getNextSession, addSession, createRecording} from "./client";
 
 const buttonStyle = "m-4 px-6 py-2 font-medium rounded shadow-md hover:shadow-lg";
 const purpleButton = "bg-purple-400 hover:bg-purple-200";
-const orangeButton = "bg-orange-400 hover:bg-purple-200"
+const orangeButton = "bg-orange-400 hover:bg-orange-200"
 const redButton = "bg-red-400 hover:bg-red-200";
 const sessionSize = 10;  // Number of sentences in a single session // TODO: Should this be increased? (feedback from reader)
 const defaultSessionState = {"Luganda": -1, "English": -1};
@@ -177,7 +177,7 @@ const PromptText = ({session, endSession, sentences}) => {
                 <p className="font-medium text-xl">{sentences[currSentenceIndex]}</p>
                 <button
                     onClick={nextSentence}
-                    className={`${buttonStyle} ${purpleButton}`}>
+                    className={`${buttonStyle} ${session.language === "Luganda" ? purpleButton : orangeButton}`}>
                     Next Sentence
                 </button>
             </>}
