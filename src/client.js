@@ -4,7 +4,7 @@ const addSessionURL = `${API_URL}/add-session`;
 const createRecordingURL = `${API_URL}/create-recording`;
 
 
-export const getNextSession = async () => {
+export const getNextSession = async (language) => {
     const requestOptions = {
         method: 'GET',
         headers: {'Content-Type': 'application/json'},

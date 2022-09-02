@@ -1,38 +1,44 @@
 import {useEffect, useState} from "react";
 import {millisecondsToHuman} from "./helpers";
-import sentences from './luganda_sentences.json';
+import lugandaSentences from './luganda_sentences.json';
+import englishSentences from './english_sentences.json';
 import {getNextSession, addSession, createRecording} from "./client";
 
 
 const buttonStyle = "m-4 px-6 py-2 font-medium rounded shadow-md hover:shadow-lg";
 const purpleButton = "bg-purple-400 hover:bg-purple-200";
+const orangeButton = "bg-orange-400 hover:bg-purple-200"
 const redButton = "bg-red-400 hover:bg-red-200";
 const sessionSize = 10;  // Number of sentences in a single session // TODO: Should this be increased? (feedback from reader)
+const defaultSessionState = {"Luganda": -1, "English": -1};
+
 
 const MainComponent = () => {
 
     const [page, setPage] = useState("start");  // pages: start, prompt, waiting (finish session)
     const [session, setSession] = useState({});
-    const [sessionId, setSessionId] = useState(-1);
+    const [sessionState, setSessionState] = useState(defaultSessionState);
 
     // TODO: Static sessions. 10 sentences per session.
     // TODO: Add progress indicator (for both recordings and sessions)
 
-    const startSession = async () => {
+    const startSession = async (language) => {
         // Fetches the last session from the server and uses it to set the session_id
         // Each session's sentences range from indices: (sessionId * sessionSize)...(sessionId * (sessionSize + 1) - 1)
+        const sessionId = sessionState[language];
         setSession({
             "start_time": Date.now(),
             "no_of_sentences": 0,
-            "session_id": String(sessionId),
-            "first_sentence_id": sessionId * sessionSize
+            "session_id": `${language} ${sessionId}`,
+            "first_sentence_id": sessionId * sessionSize,
+            "language": language
         });
         setPage("prompt");
     }
 
     const fetchNextSession = async () => {
-        const nextSessionId = await getNextSession();
-        setSessionId(nextSessionId);
+        const nextSessionState = await getNextSession();
+        setSessionState(nextSessionState);
     }
 
     const logSessionToServer = async (session) => {
@@ -47,7 +53,7 @@ const MainComponent = () => {
                 "last_sentence_id": last_sentence_id
             }
         )
-        setSessionId(-1)
+        setSessionState(defaultSessionState);
         setPage("start");
     }
 
@@ -63,23 +69,32 @@ const MainComponent = () => {
 
     // Fetch the next session's id
     useEffect(() => {
-        console.log(sessionId);
-        if (sessionId === -1)
+        console.log(sessionState);
+        if (sessionState["Luganda"] === -1)
             fetchNextSession();
-    }, [sessionId]);
+    }, [sessionState]);
 
     return (
         <>
             {
-                sessionId === -1 ? "Getting next session..." :
+                sessionState["Luganda"] === -1 ? "Getting next session..." :
                     <>
                         <>
                             {
                                 page === "start" &&
-                                <StartButton
-                                    startSession={startSession}
-                                    sessionId={sessionId}
-                                />
+                                <div>
+
+                                    <StartButton
+                                        language="Luganda"
+                                        startSession={startSession}
+                                        sessionId={sessionState["Luganda"]}
+                                    />
+                                    <StartButton
+                                        language="English"
+                                        startSession={startSession}
+                                        sessionId={sessionState["English"]}
+                                    />
+                                </div>
                             }
                         </>
                         <>
@@ -88,6 +103,7 @@ const MainComponent = () => {
                                 <PromptText
                                     endSession={endSession}
                                     session={session}
+                                    sentences={session.language === "Luganda" ? lugandaSentences : englishSentences}
                                 />
                             }
                         </>
@@ -98,22 +114,22 @@ const MainComponent = () => {
     )
 }
 
-const StartButton = ({startSession, sessionId}) => {
+const StartButton = ({startSession, sessionId, language}) => {
 
     return (
         <>
             <button
-                onClick={() => startSession()}
-                className={`${buttonStyle} ${purpleButton}`}
+                onClick={() => startSession(language)}
+                className={`${buttonStyle} ${language === "Luganda" ? purpleButton : orangeButton}`}
             >
-                {`Start Session ${sessionId}`}
+                {`Start ${language} Session ${sessionId}`}
             </button>
         </>
 
     )
 }
 
-const PromptText = ({session, endSession}) => {
+const PromptText = ({session, endSession, sentences}) => {
 
     const [currSentenceIndex, setCurrSentenceIndex] = useState(session.first_sentence_id);
     const [waiting, setWaiting] = useState(false);
@@ -126,7 +142,7 @@ const PromptText = ({session, endSession}) => {
             "end_time": Date.now(),
             "session_id": String(session.session_id),
             "sentence": sentences[currSentenceIndex],
-            "sentence_id": String(currSentenceIndex)
+            "sentence_id": `${session.language} ${currSentenceIndex}`,
         }
         console.log(`Finished reading a sentence: ${JSON.stringify(sentenceRecording)}`);
         setWaiting(true); // will call useEffect
