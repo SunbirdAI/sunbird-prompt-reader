@@ -1,16 +1,16 @@
 {
   "files": {
     "main.css": "/sunbird-prompt-reader/static/css/main.f42f0c33.css",
-    "main.js": "/sunbird-prompt-reader/static/js/main.e332835f.js",
+    "main.js": "/sunbird-prompt-reader/static/js/main.5a64ee7e.js",
     "static/js/787.6da57111.chunk.js": "/sunbird-prompt-reader/static/js/787.6da57111.chunk.js",
     "static/media/logo.svg": "/sunbird-prompt-reader/static/media/logo.6ce24c58023cc2f8fd88fe9d219db6c6.svg",
     "index.html": "/sunbird-prompt-reader/index.html",
     "main.f42f0c33.css.map": "/sunbird-prompt-reader/static/css/main.f42f0c33.css.map",
-    "main.e332835f.js.map": "/sunbird-prompt-reader/static/js/main.e332835f.js.map",
+    "main.5a64ee7e.js.map": "/sunbird-prompt-reader/static/js/main.5a64ee7e.js.map",
     "787.6da57111.chunk.js.map": "/sunbird-prompt-reader/static/js/787.6da57111.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.f42f0c33.css",
-    "static/js/main.e332835f.js"
+    "static/js/main.5a64ee7e.js"
   ]
 }
