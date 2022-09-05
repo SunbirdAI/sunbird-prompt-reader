@@ -2,7 +2,7 @@ import {useEffect, useState} from "react";
 import {millisecondsToHuman} from "./helpers";
 import lugandaSentences from './luganda_sentences.json';
 import englishSentences from './english_sentences.json';
-import {getNextSession, addSession, createRecording} from "./client";
+import {getNextSession, addSession, createRecordings} from "./client";
 
 
 const buttonStyle = "m-4 px-6 py-2 font-medium rounded shadow-md hover:shadow-lg";
@@ -61,10 +61,11 @@ const MainComponent = () => {
     const logSession = async () => {
         console.log(`Ending session: ${JSON.stringify(session)}`);
         await logSessionToServer(session);
-        console.log(`Sentence recordings for session: ${sentenceRecordings}`);
-        for (const sentenceRecording in sentenceRecordings) {
-            await createRecording(sentenceRecording);
-        }
+        console.log(`Sentence recordings for session: ${JSON.stringify(sentenceRecordings)}`);
+        await createRecordings(sentenceRecordings);
+        // for (const sentenceRecording in sentenceRecordings) {
+        //     await createRecording(sentenceRecording);
+        // }
         setLoggingSession(2);
     }
 
@@ -85,7 +86,7 @@ const MainComponent = () => {
     useEffect(() => {
         if ("end_time" in session) {
             setLoggingSession(1);
-            logSessionToServer(session)
+            // logSessionToServer(session);
         } else if ("start_time" in session) {
             console.log(`Starting session: ${JSON.stringify(session)}`);
         }
@@ -163,38 +164,49 @@ const StartButton = ({startSession, sessionId, language}) => {
 
 const PromptText = ({session, endSession, sentences, setSentenceRecordings}) => {
 
-    const [currSentenceIndex, setCurrSentenceIndex] = useState(session.first_sentence_id);
+    // const [currSentenceIndex, setCurrSentenceIndex] = useState(session.first_sentence_id);
     const [waiting, setWaiting] = useState(false);
     const [elapsedTime, setElapsedTime] = useState(0);
-    const [sentenceStartTime, setSentenceStartTime] = useState(Date.now());
+    // const [sentenceStartTime, setSentenceStartTime] = useState(Date.now());
+    const [currSentenceState, setCurrSentenceState] = useState({
+        sentenceIndex: session.first_sentence_id,
+        startTime: Date.now()
+    })
 
-    const nextSentence = () => {
+    const nextSentence = async () => {
         const sentenceRecording = {
-            "start_time": sentenceStartTime,
+            "start_time": currSentenceState.startTime,
             "end_time": Date.now(),
             "session_id": String(session.session_id),
-            "sentence": sentences[currSentenceIndex],
-            "sentence_id": `${session.language} ${currSentenceIndex}`,
+            "sentence": sentences[currSentenceState.sentenceIndex],
+            "sentence_id": `${session.language} ${currSentenceState.sentenceIndex}`,
         }
 
         console.log(`Finished reading a sentence: ${JSON.stringify(sentenceRecording)}`);
         // setWaiting(true); // will call useEffect. Uncomment if need time out
         // createRecording(sentenceRecording);
-        setSentenceRecordings(prevState => [...prevState, sentenceRecording])
-        setCurrSentenceIndex((currSentenceIndex + 1) % sentences.length);
+        setSentenceRecordings(prevState => [...prevState, sentenceRecording]);
+        setCurrSentenceState(prevState => ({
+            sentenceIndex: prevState.sentenceIndex + 1,
+            startTime: Date.now()
+
+        }));
     }
 
     useEffect(() => {
         if (waiting) {
             const timeout = setTimeout(() => {
-                setCurrSentenceIndex((currSentenceIndex + 1) % sentences.length);
+                setCurrSentenceState(prevState => ({
+                    sentenceIndex: prevState.sentenceIndex + 1,
+                    startTime: Date.now()
+
+                }));
                 setWaiting(false);
-                setSentenceStartTime(Date.now());
             }, timeBetweenSentences);
             return () => clearTimeout(timeout);
         }
 
-    }, [waiting, currSentenceIndex]);
+    }, [waiting]);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -226,12 +238,12 @@ const PromptText = ({session, endSession, sentences, setSentenceRecordings}) => 
             {/*        <p>Waiting 3 seconds for next sentence...</p>*/}
             {/*)*/}
             {/*}*/}
-            {currSentenceIndex === sentences.length || currSentenceIndex === (session.first_sentence_id + sessionSize) ?
-                <button onClick={() => endSession(currSentenceIndex)}
+            {currSentenceState.sentenceIndex === sentences.length || currSentenceState.sentenceIndex === (session.first_sentence_id + sessionSize) ?
+                <button onClick={() => endSession(currSentenceState.sentenceIndex)}
                         className={`${buttonStyle} ${redButton} my-10`}>Finish Session
                 </button> :
                 <>
-                    <p className="font-medium text-xl">{sentences[currSentenceIndex]}</p>
+                    <p className="font-medium text-xl">{sentences[currSentenceState.sentenceIndex]}</p>
                     <button
                         onClick={nextSentence}
                         className={`${buttonStyle} ${session.language === "Luganda" ? purpleButton : orangeButton}`}>

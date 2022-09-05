@@ -4,14 +4,14 @@ const addSessionURL = `${API_URL}/add-session`;
 const createRecordingURL = `${API_URL}/create-recording`;
 
 
-export const getNextSession = async (language) => {
+export const getNextSession = async () => {
     const requestOptions = {
         method: 'GET',
         headers: {'Content-Type': 'application/json'},
     }
-    console.log(nextSessionURL);
+    // console.log(nextSessionURL);
     const response = await (await fetch(nextSessionURL, requestOptions)).json();
-    console.log(response);
+    // console.log(response);
     return response['next-session'];
 }
 
@@ -26,11 +26,11 @@ export const addSession = async (session) => {
     console.log(response);
 }
 
-export const createRecording = async (sentenceRecording) => {
+export const createRecordings = async (sentenceRecordings) => {
     const requestOptions = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(sentenceRecording)
+        body: JSON.stringify(sentenceRecordings)
     }
 
     const response = await (await fetch(createRecordingURL, requestOptions)).json();
