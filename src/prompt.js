@@ -71,7 +71,7 @@ const MainComponent = () => {
     useEffect(() => {
         if (loggingSession === 1) {
             logSession();
-        } else if(loggingSession === 2) {
+        } else if (loggingSession === 2) {
             const timeout = setTimeout(() => {
                 setLoggingSession(0);
                 setSessionState(defaultSessionState);
@@ -135,7 +135,8 @@ const MainComponent = () => {
                         <>
                             {
                                 page === "logging-session" &&
-                                <p>Sending session to server. Please save the audio file as <span className="font-medium">"{`${session.session_id}.mp4`}"</span></p>
+                                <p>Sending session to server. Please save the audio file as <span
+                                    className="font-medium">"{`${session.session_id}.mp4`}"</span></p>
                             }
                         </>
                     </>
@@ -177,9 +178,10 @@ const PromptText = ({session, endSession, sentences, setSentenceRecordings}) => 
         }
 
         console.log(`Finished reading a sentence: ${JSON.stringify(sentenceRecording)}`);
-        setWaiting(true); // will call useEffect
+        // setWaiting(true); // will call useEffect. Uncomment if need time out
         // createRecording(sentenceRecording);
         setSentenceRecordings(prevState => [...prevState, sentenceRecording])
+        setCurrSentenceIndex((currSentenceIndex + 1) % sentences.length);
     }
 
     useEffect(() => {
@@ -205,23 +207,37 @@ const PromptText = ({session, endSession, sentences, setSentenceRecordings}) => 
     return (
         <div className="grid place-items-center p-4">
             <p className="text-purple-400 font-medium">{millisecondsToHuman(elapsedTime)}</p>
-            {!waiting &&
-            <>
-                <p className="font-medium text-xl">{sentences[currSentenceIndex]}</p>
-                <button
-                    onClick={nextSentence}
-                    className={`${buttonStyle} ${session.language === "Luganda" ? purpleButton : orangeButton}`}>
-                    Next Sentence
-                </button>
-            </>}
-            {waiting &&
-            ((currSentenceIndex % sessionSize === sessionSize - 1
-                    || currSentenceIndex === sentences.length - 1) ?
-                    <button onClick={() => endSession(currSentenceIndex)}
-                            className={`${buttonStyle} ${redButton} my-10`}>Finish Session
-                    </button> :
-                    <p>Waiting 3 seconds for next sentence...</p>
-            )
+            {/*Use below if there is a timeout*/}
+            {/*{!waiting &&*/}
+            {/*<>*/}
+            {/*    <p className="font-medium text-xl">{sentences[currSentenceIndex]}</p>*/}
+            {/*    <button*/}
+            {/*        onClick={nextSentence}*/}
+            {/*        className={`${buttonStyle} ${session.language === "Luganda" ? purpleButton : orangeButton}`}>*/}
+            {/*        Next Sentence*/}
+            {/*    </button>*/}
+            {/*</>}*/}
+            {/*{waiting &&*/}
+            {/*((currSentenceIndex % sessionSize === sessionSize - 1*/}
+            {/*        || currSentenceIndex === sentences.length - 1) ?*/}
+            {/*        <button onClick={() => endSession(currSentenceIndex)}*/}
+            {/*                className={`${buttonStyle} ${redButton} my-10`}>Finish Session*/}
+            {/*        </button> :*/}
+            {/*        <p>Waiting 3 seconds for next sentence...</p>*/}
+            {/*)*/}
+            {/*}*/}
+            {currSentenceIndex === sentences.length || currSentenceIndex === (session.first_sentence_id + sessionSize) ?
+                <button onClick={() => endSession(currSentenceIndex)}
+                        className={`${buttonStyle} ${redButton} my-10`}>Finish Session
+                </button> :
+                <>
+                    <p className="font-medium text-xl">{sentences[currSentenceIndex]}</p>
+                    <button
+                        onClick={nextSentence}
+                        className={`${buttonStyle} ${session.language === "Luganda" ? purpleButton : orangeButton}`}>
+                        Next Sentence
+                    </button>
+                </>
             }
         </div>
     );
