@@ -11,6 +11,7 @@ const orangeButton = "bg-orange-400 hover:bg-orange-200"
 const redButton = "bg-red-400 hover:bg-red-200";
 const sessionSize = 10;  // Number of sentences in a single session // TODO: Should this be increased? (feedback from reader)
 const defaultSessionState = {"Luganda": -1, "English": -1};
+const timeBetweenSentences = 0;  // in seconds
 
 
 const MainComponent = () => {
@@ -18,8 +19,9 @@ const MainComponent = () => {
     const [page, setPage] = useState("start");  // pages: start, prompt, waiting (finish session)
     const [session, setSession] = useState({});
     const [sessionState, setSessionState] = useState(defaultSessionState);
+    const [loggingSession, setLoggingSession] = useState(0);  // 0 -> not logging session, 1 -> logging session 2 -> finished logging session
+    const [sentenceRecordings, setSentenceRecordings] = useState([]);
 
-    // TODO: Static sessions. 10 sentences per session.
     // TODO: Add progress indicator (for both recordings and sessions)
 
     const startSession = async (language) => {
@@ -53,14 +55,36 @@ const MainComponent = () => {
                 "last_sentence_id": last_sentence_id
             }
         )
-        setSessionState(defaultSessionState);
-        setPage("start");
+        setPage("logging-session");
     }
+
+    const logSession = async () => {
+        console.log(`Ending session: ${JSON.stringify(session)}`);
+        await logSessionToServer(session);
+        console.log(`Sentence recordings for session: ${sentenceRecordings}`);
+        for (const sentenceRecording in sentenceRecordings) {
+            await createRecording(sentenceRecording);
+        }
+        setLoggingSession(2);
+    }
+
+    useEffect(() => {
+        if (loggingSession === 1) {
+            logSession();
+        } else if(loggingSession === 2) {
+            const timeout = setTimeout(() => {
+                setLoggingSession(0);
+                setSessionState(defaultSessionState);
+                setPage("start");
+            }, 5000);
+            return () => clearTimeout(timeout);
+        }
+    }, [loggingSession]);
 
     // Log the current session
     useEffect(() => {
         if ("end_time" in session) {
-            console.log(`Ending session: ${JSON.stringify(session)}`);
+            setLoggingSession(1);
             logSessionToServer(session)
         } else if ("start_time" in session) {
             console.log(`Starting session: ${JSON.stringify(session)}`);
@@ -104,7 +128,14 @@ const MainComponent = () => {
                                     endSession={endSession}
                                     session={session}
                                     sentences={session.language === "Luganda" ? lugandaSentences : englishSentences}
+                                    setSentenceRecordings={setSentenceRecordings}
                                 />
+                            }
+                        </>
+                        <>
+                            {
+                                page === "logging-session" &&
+                                <p>Sending session to server. Please save the audio file as <span className="font-medium">"{`${session.session_id}.mp4`}"</span></p>
                             }
                         </>
                     </>
@@ -129,14 +160,14 @@ const StartButton = ({startSession, sessionId, language}) => {
     )
 }
 
-const PromptText = ({session, endSession, sentences}) => {
+const PromptText = ({session, endSession, sentences, setSentenceRecordings}) => {
 
     const [currSentenceIndex, setCurrSentenceIndex] = useState(session.first_sentence_id);
     const [waiting, setWaiting] = useState(false);
     const [elapsedTime, setElapsedTime] = useState(0);
     const [sentenceStartTime, setSentenceStartTime] = useState(Date.now());
 
-    const nextSentence = async () => {
+    const nextSentence = () => {
         const sentenceRecording = {
             "start_time": sentenceStartTime,
             "end_time": Date.now(),
@@ -144,9 +175,11 @@ const PromptText = ({session, endSession, sentences}) => {
             "sentence": sentences[currSentenceIndex],
             "sentence_id": `${session.language} ${currSentenceIndex}`,
         }
+
         console.log(`Finished reading a sentence: ${JSON.stringify(sentenceRecording)}`);
         setWaiting(true); // will call useEffect
-        createRecording(sentenceRecording);
+        // createRecording(sentenceRecording);
+        setSentenceRecordings(prevState => [...prevState, sentenceRecording])
     }
 
     useEffect(() => {
@@ -155,7 +188,7 @@ const PromptText = ({session, endSession, sentences}) => {
                 setCurrSentenceIndex((currSentenceIndex + 1) % sentences.length);
                 setWaiting(false);
                 setSentenceStartTime(Date.now());
-            }, 3000); // TODO: Maybe use 5000 seconds.
+            }, timeBetweenSentences);
             return () => clearTimeout(timeout);
         }
 
