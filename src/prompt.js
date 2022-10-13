@@ -1,5 +1,4 @@
 import {useEffect, useState} from "react";
-import {millisecondsToHuman} from "./helpers";
 import lugandaSentences from './luganda_sentences.json';
 import englishSentences from './english_sentences.json';
 import {getNextSession, addSession, createRecordings} from "./client";
@@ -12,6 +11,9 @@ const redButton = "bg-red-400 hover:bg-red-200";
 const sessionSize = 10;  // Number of sentences in a single session // TODO: Should this be increased? (feedback from reader)
 const defaultSessionState = {"Luganda": -1, "English": -1};
 const timeBetweenSentences = 0;  // in seconds
+const totalLugandaSentences = lugandaSentences.length;
+const totalEnglishSentences = englishSentences.length;
+console.log(`${totalLugandaSentences} ${totalEnglishSentences}`);
 
 
 const MainComponent = () => {
@@ -136,15 +138,14 @@ const MainComponent = () => {
                         <>
                             {
                                 page === "logging-session" &&
-                                <p>Sending session to server. Please save the audio file as <span
-                                    className="font-medium">"{`${session.session_id}.mp4`}"</span></p>
+                                <p className="text-l">Thank you! Please wait while we send the sentences to the server.</p>
                             }
                         </>
                     </>
             }
         </>
 
-    )
+    );
 }
 
 const StartButton = ({startSession, sessionId, language}) => {
@@ -218,7 +219,7 @@ const PromptText = ({session, endSession, sentences, setSentenceRecordings}) => 
 
     return (
         <div className="grid place-items-center p-4">
-            <p className="text-purple-400 font-medium">{millisecondsToHuman(elapsedTime)}</p>
+            {/*<p className="text-purple-400 font-medium">{millisecondsToHuman(elapsedTime)}</p>*/}
             {/*Use below if there is a timeout*/}
             {/*{!waiting &&*/}
             {/*<>*/}
@@ -243,6 +244,7 @@ const PromptText = ({session, endSession, sentences, setSentenceRecordings}) => 
                         className={`${buttonStyle} ${redButton} my-10`}>Finish Session
                 </button> :
                 <>
+                    <p className="m-24">Save the file as <strong className="text-l">{`${session.language} ${currSentenceState.sentenceIndex}`}</strong></p>
                     <p className="font-medium text-xl">{sentences[currSentenceState.sentenceIndex]}</p>
                     <button
                         onClick={nextSentence}
