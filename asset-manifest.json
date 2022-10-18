@@ -1,16 +1,16 @@
 {
   "files": {
-    "main.css": "/sunbird-prompt-reader/static/css/main.f9f7bd68.css",
-    "main.js": "/sunbird-prompt-reader/static/js/main.c59630d4.js",
+    "main.css": "/sunbird-prompt-reader/static/css/main.68b76fc3.css",
+    "main.js": "/sunbird-prompt-reader/static/js/main.d52634d4.js",
     "static/js/787.6da57111.chunk.js": "/sunbird-prompt-reader/static/js/787.6da57111.chunk.js",
     "static/media/logo.svg": "/sunbird-prompt-reader/static/media/logo.6ce24c58023cc2f8fd88fe9d219db6c6.svg",
     "index.html": "/sunbird-prompt-reader/index.html",
-    "main.f9f7bd68.css.map": "/sunbird-prompt-reader/static/css/main.f9f7bd68.css.map",
-    "main.c59630d4.js.map": "/sunbird-prompt-reader/static/js/main.c59630d4.js.map",
+    "main.68b76fc3.css.map": "/sunbird-prompt-reader/static/css/main.68b76fc3.css.map",
+    "main.d52634d4.js.map": "/sunbird-prompt-reader/static/js/main.d52634d4.js.map",
     "787.6da57111.chunk.js.map": "/sunbird-prompt-reader/static/js/787.6da57111.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.f9f7bd68.css",
-    "static/js/main.c59630d4.js"
+    "static/css/main.68b76fc3.css",
+    "static/js/main.d52634d4.js"
   ]
 }
