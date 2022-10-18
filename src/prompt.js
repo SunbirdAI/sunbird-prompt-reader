@@ -2,6 +2,7 @@ import {useEffect, useState} from "react";
 import lugandaSentences from './luganda_sentences.json';
 import englishSentences from './english_sentences.json';
 import {getNextSession, addSession, createRecordings} from "./client";
+import {CircularProgress} from "@mui/material";
 
 
 const buttonStyle = "m-4 px-6 py-2 font-medium rounded shadow-md hover:shadow-lg";
@@ -104,7 +105,13 @@ const MainComponent = () => {
     return (
         <>
             {
-                sessionState["Luganda"] === -1 ? "Getting next session..." :
+                sessionState["Luganda"] === -1 ?
+                    <>
+                        <p className="tex-l font-bold">
+                            Getting next session...
+                            <CircularProgress/>
+                        </p>
+                    </> :
                     <>
                         <>
                             {
@@ -138,7 +145,10 @@ const MainComponent = () => {
                         <>
                             {
                                 page === "logging-session" &&
-                                <p className="text-l">Thank you! Please wait while we send the sentences to the server.</p>
+                                <p className="text-l font-medium">
+                                    Thank you! Please wait while we send the sentences to the server.
+                                    <CircularProgress/>
+                                </p>
                             }
                         </>
                     </>
